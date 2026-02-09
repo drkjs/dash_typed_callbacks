@@ -14,7 +14,7 @@ build-backend = "hatchling.build"
 packages = ["src/dash_typed_callbacks"]
 
 [dependency-groups]
-dev = ["pytest>=8.0", "pytest-cov>=6.0"]
+dev = ["pytest>=9.0", "pytest-cov>=7.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
