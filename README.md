@@ -23,7 +23,7 @@ While [flexible callback signatures](https://dash.plotly.com/flexible-callback-s
 ```python
 from dataclasses import dataclass
 from typing import Annotated
-from dash_typed import Out, In, St, typed_app_callback
+from dash_typed_callbacks import Out, In, St, typed_app_callback
 
 @dataclass
 class Inputs:
