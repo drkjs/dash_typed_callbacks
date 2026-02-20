@@ -82,6 +82,7 @@ class _BaseMarker:
         """
         if type(self) is not type(other):
             return NotImplemented
+        assert isinstance(other, _BaseMarker)
         return self.component_id == other.component_id and self.prop == other.prop
 
     def __hash__(self) -> int:

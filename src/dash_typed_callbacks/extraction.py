@@ -45,7 +45,11 @@ def get_all_bindings(cls: type) -> list[tuple[str, _BaseMarker]]:
 
     for field in dataclasses.fields(cls):
         marker = _get_annotated_marker(hints.get(field.name))
-        if marker is None and _is_marker(field.default):
+        if (
+            marker is None
+            and field.default is not dataclasses.MISSING
+            and _is_marker(field.default)
+        ):
             marker = field.default
         if marker is not None:
             bindings.append((field.name, marker))
