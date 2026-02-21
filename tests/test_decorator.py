@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import dash
 import pytest
 
-from dash_typed_callbacks.decorator import _build_dash_dependencies
+from dash_typed_callbacks.decorator import _build_dash_dependencies, _resolve_return_type
 from dash_typed_callbacks.markers import In, Out, St
 
 
@@ -78,3 +78,35 @@ def test_build_dash_dependencies_no_bindings():
 
     with pytest.raises(TypeError, match="Empty has no marker bindings"):
         _build_dash_dependencies(Empty)
+
+
+def test_resolve_return_type_valid():
+    """Extracts return type from a function annotated with a dataclass."""
+
+    def my_callback() -> OutputModel:
+        ...
+
+    assert _resolve_return_type(my_callback) is OutputModel
+
+
+@pytest.mark.parametrize(
+    "func, match",
+    [
+        pytest.param(
+            lambda: None,
+            "must have a return type annotation",
+            id="no_annotation",
+        ),
+        pytest.param(
+            lambda: None,
+            "must be a dataclass",
+            id="non_dataclass",
+        ),
+    ],
+)
+def test_resolve_return_type_errors(func, match):
+    """Raises TypeError for missing annotation or non-dataclass return type."""
+    if match == "must be a dataclass":
+        func.__annotations__["return"] = str
+    with pytest.raises(TypeError, match=match):
+        _resolve_return_type(func)

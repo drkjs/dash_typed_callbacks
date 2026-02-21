@@ -1,3 +1,7 @@
+import dataclasses
+from collections.abc import Callable
+from typing import Any, get_type_hints
+
 import dash
 
 from dash_typed_callbacks.extraction import get_all_bindings
@@ -46,3 +50,34 @@ def _build_dash_dependencies(
         dash_deps.append(dash_type(marker.component_id, marker.prop))
 
     return dash_deps
+
+
+def _resolve_return_type(func: Callable[..., Any]) -> type:
+    """Extracts and validates the return type annotation from a callback function.
+
+    Args:
+        func: The decorated callback function.
+
+    Returns:
+        The return type, which must be a dataclass class (not an instance).
+
+    Raises:
+        TypeError: If the function has no return annotation or the return type
+            is not a dataclass class.
+    """
+    hints = get_type_hints(func)
+    if "return" not in hints:
+        raise TypeError(
+            f"{func.__name__} must have a return type annotation"
+        )
+
+    return_type = hints["return"]
+    if not (dataclasses.is_dataclass(return_type) and isinstance(
+        return_type, type
+    )):
+        raise TypeError(
+            f"Return type of {func.__name__} must be a dataclass, "
+            f"got {return_type!r}"
+        )
+
+    return return_type
