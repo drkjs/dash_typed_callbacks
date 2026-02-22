@@ -22,3 +22,6 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "dash_integration: tests that create a real Dash app (may be slow or need extra deps)",
+]

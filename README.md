@@ -40,7 +40,7 @@ class Outputs:
     tax: Annotated[float, Out("tax", "value")]
     total: Annotated[float, Out("total", "value")]
 
-@typed_app_callback(app, Inputs, States)
+@typed_app_callback(app)
 def calculate(inputs: Inputs, states: States) -> Outputs:
     subtotal = states.price * states.quantity
     tax = subtotal * 0.1
@@ -49,6 +49,14 @@ def calculate(inputs: Inputs, states: States) -> Outputs:
         tax=tax,
         total=subtotal + tax
     )
+```
+
+Input and state types are inferred from the function's parameter annotations. You can also pass them explicitly if you prefer:
+
+```python
+@typed_app_callback(app, Inputs, States)
+def calculate(inputs: Inputs, states: States) -> Outputs:
+    ...
 ```
 
 ## Planned Features
