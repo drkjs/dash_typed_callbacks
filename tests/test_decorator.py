@@ -222,3 +222,65 @@ def test_typed_app_callback_with_real_dash_app():
 
     assert result["response"]["count-id"]["value"] == 42
     assert result["response"]["msg-id"]["children"] == "hello"
+
+
+@pytest.mark.dash_integration
+def test_typed_app_callback_with_states():
+    """End-to-end test with both inputs and states using a real Dash app."""
+    import json
+
+    app = dash.Dash(__name__)
+
+    @typed_app_callback(app, InputModel, StateModel)
+    def my_callback(inputs: InputModel, states: StateModel) -> OutputModel:
+        return OutputModel(count=inputs.btn, message=states.setting)
+
+    callback_id = next(iter(app.callback_map))
+    wrapper = app.callback_map[callback_id]["callback"]
+    outputs_list = [
+        {"id": "count-id", "property": "value"},
+        {"id": "msg-id", "property": "children"},
+    ]
+
+    # Args order: InputModel fields (btn, value), then StateModel fields (setting)
+    raw = wrapper(7, "ignored", "my-setting", outputs_list=outputs_list)
+    result = json.loads(raw)
+
+    assert result["response"]["count-id"]["value"] == 7
+    assert result["response"]["msg-id"]["children"] == "my-setting"
+
+
+@pytest.mark.dash_integration
+def test_typed_app_callback_annotated_syntax():
+    """End-to-end test using Annotated[T, Marker(...)] field syntax."""
+    import json
+    from typing import Annotated
+
+    @dataclass
+    class AnnotatedInputs:
+        btn: Annotated[int, In("a-btn-id", "n_clicks")]
+        value: Annotated[str, In("a-input-id", "value")]
+
+    @dataclass
+    class AnnotatedOutputs:
+        count: Annotated[int, Out("a-count-id", "value")]
+        message: Annotated[str, Out("a-msg-id", "children")]
+
+    app = dash.Dash(__name__)
+
+    @typed_app_callback(app, AnnotatedInputs)
+    def my_callback(inputs: AnnotatedInputs) -> AnnotatedOutputs:
+        return AnnotatedOutputs(count=inputs.btn, message=inputs.value)
+
+    callback_id = next(iter(app.callback_map))
+    wrapper = app.callback_map[callback_id]["callback"]
+    outputs_list = [
+        {"id": "a-count-id", "property": "value"},
+        {"id": "a-msg-id", "property": "children"},
+    ]
+
+    raw = wrapper(99, "world", outputs_list=outputs_list)
+    result = json.loads(raw)
+
+    assert result["response"]["a-count-id"]["value"] == 99
+    assert result["response"]["a-msg-id"]["children"] == "world"
