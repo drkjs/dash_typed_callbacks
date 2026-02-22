@@ -59,11 +59,36 @@ def calculate(inputs: Inputs, states: States) -> Outputs:
     ...
 ```
 
-## Planned Features
+### `@DashModel` decorator
 
-- **Named fields** — return objects with clear, documented attributes
+Instead of `@dataclass`, you can use `@DashModel` to get a few utility methods for free:
+
+```python
+from dash_typed_callbacks import DashModel, Out
+
+@DashModel
+class Outputs:
+    subtotal: float = Out("subtotal", "value")
+    tax: float = Out("tax", "value")
+    total: float = Out("total", "value")
+
+Outputs.field_names()   # ['subtotal', 'tax', 'total']
+Outputs.dash_fields()   # [('subtotal', Out(...)), ('tax', Out(...)), ...]
+
+result = Outputs(subtotal=90.0, tax=9.0, total=99.0)
+result.to_tuple()       # (90.0, 9.0, 99.0)
+```
+
+This is entirely optional — plain `@dataclass` classes work with `typed_app_callback` just as well. `@DashModel` can also be stacked on top of an existing `@dataclass` decorator (e.g. `@dataclass(frozen=True)`) without double-wrapping.
+
+## Features
+
+- **Named fields** — return objects with clear, documented attributes instead of positional tuples
 - **Flexible syntax** — use `Annotated[T, Out(...)]` or `field: T = Out(...)`, mix freely
-- **Automatic projection** — return any object (dataclass, dict, Pydantic model) and it auto-maps to your outputs - helpful if you have an API call that returns a Pydantic model and you just want to return (a subset of) the returned data
+- **Type inference** — input and state types are inferred from function annotations, or can be passed explicitly
+- **Automatic projection** — return any object (dataclass, dict, Pydantic model) and it auto-maps to your outputs
+- **`@DashModel` decorator** — optional drop-in replacement for `@dataclass` that adds `to_tuple()`, `dash_fields()`, and `field_names()` utilities
 
 ## Status
+
 The code is under active development.
